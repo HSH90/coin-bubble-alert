@@ -1,11 +1,10 @@
-import os
-import re
 import requests
+import os
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
-UPPER_LIMIT = float(os.getenv("UPPER_LIMIT", 15))
-LOWER_LIMIT = float(os.getenv("LOWER_LIMIT", 10))
+UPPER_LIMIT = float(os.getenv("UPPER_LIMIT") or 15)
+LOWER_LIMIT = float(os.getenv("LOWER_LIMIT") or 10)
 
 def calculate_bubble(coin_price, dollar_rate, ounce_price):
     pure_gold_grams = 8.133 * 0.9
@@ -19,25 +18,15 @@ def send_message(text):
     payload = {"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML"}
     requests.post(url, data=payload)
 
-def get_last_channel_message():
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/getUpdates"
-    res = requests.get(url).json()
-    messages = res.get("result", [])
-    for msg in reversed(messages):
-        text = msg.get("channel_post", {}).get("text", "")
-        if "سکه امامی" in text and "اونس طلا" in text:
-            return text
-    return None
+def fetch_data():
+    # Replace with real scraping or API call later
+    coin_price = 110_600_000
+    dollar_rate = 106_750
+    ounce_price = 4008
+    return coin_price, dollar_rate, ounce_price
 
-def process_message(msg):
-    try:
-        coin_price = int(re.search(r"سکه امامی\s([\d,]+)", msg).group(1).replace(",", ""))
-        dollar_rate = int(re.search(r"دلار آمریکا\s([\d,]+)", msg).group(1).replace(",", ""))
-        ounce_price = float(re.search(r"اونس طلا\s([\d,]+(?:\.\d+)?)", msg).group(1))
-    except Exception as e:
-        send_message(f"⚠️ خطا در تجزیه پیام کانال: {e}")
-        return
-
+def main():
+    coin_price, dollar_rate, ounce_price = fetch_data()
     bubble = calculate_bubble(coin_price, dollar_rate, ounce_price)
 
     base_text = (
@@ -56,13 +45,6 @@ def process_message(msg):
         alert = f"✅ در محدوده‌ی نرمال است."
 
     send_message(base_text + "\n\n" + alert)
-
-def main():
-    msg = get_last_channel_message()
-    if msg:
-        process_message(msg)
-    else:
-        send_message("⚠️ پیامی از کانال یافت نشد یا ساختار آن تغییر کرده است.")
 
 if __name__ == "__main__":
     main()
