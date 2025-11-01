@@ -1,4 +1,4 @@
-name: Coin Bubble Checker
+name: Coin Bubble Channel Alert
 
 on:
   schedule:
@@ -18,12 +18,12 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install requests python-dotenv
+        run: pip install requests
 
-      - name: Run script
-        run: python main.py
+      - name: Run bot
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
           UPPER_LIMIT: ${{ secrets.UPPER_LIMIT }}
           LOWER_LIMIT: ${{ secrets.LOWER_LIMIT }}
+        run: python main.py
